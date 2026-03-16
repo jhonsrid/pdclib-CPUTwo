@@ -331,7 +331,6 @@ const char * _PDCLIB_print( const char * spec, struct _PDCLIB_status_t * status 
             {
                 /* Integer conversions (unsigned) */
                 uintmax_t value;
-                imaxdiv_t div;
 
                 switch ( status->flags & ( E_char | E_short | E_long | E_llong | E_size | E_pointer | E_intmax ) )
                 {
@@ -372,9 +371,7 @@ const char * _PDCLIB_print( const char * spec, struct _PDCLIB_status_t * status 
                         return NULL;
                 }
 
-                div.quot = value / status->base;
-                div.rem = value % status->base;
-                _PDCLIB_print_integer( div, status );
+                _PDCLIB_print_integer( value / status->base, value % status->base, status );
             }
             else
             {
@@ -416,7 +413,7 @@ const char * _PDCLIB_print( const char * spec, struct _PDCLIB_status_t * status 
                         return NULL;
                 }
 
-                _PDCLIB_print_integer( imaxdiv( value, status->base ), status );
+                _PDCLIB_print_integer( value / status->base, value % status->base, status );
             }
         }
 

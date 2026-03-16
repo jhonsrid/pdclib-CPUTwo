@@ -123,9 +123,9 @@ static void intformat( intmax_t value, struct _PDCLIB_status_t * status )
    output once the number of characters to be printed is known, which happens
    at the lowermost recursion level.
 */
-void _PDCLIB_print_integer( imaxdiv_t div, struct _PDCLIB_status_t * status )
+void _PDCLIB_print_integer( intmax_t quot, intmax_t rem, struct _PDCLIB_status_t * status )
 {
-    if ( status->current == 0 && div.quot == 0 && div.rem == 0 && status->prec == 0 )
+    if ( status->current == 0 && quot == 0 && rem == 0 && status->prec == 0 )
     {
         intformat( 0, status );
     }
@@ -133,27 +133,27 @@ void _PDCLIB_print_integer( imaxdiv_t div, struct _PDCLIB_status_t * status )
     {
         ++(status->current);
 
-        if ( div.quot != 0 )
+        if ( quot != 0 )
         {
-            _PDCLIB_print_integer( imaxdiv( div.quot, status->base ), status );
+            _PDCLIB_print_integer( quot / status->base, quot % status->base, status );
         }
         else
         {
-            intformat( div.rem, status );
+            intformat( rem, status );
         }
 
-        if ( div.rem < 0 )
+        if ( rem < 0 )
         {
-            div.rem *= -1;
+            rem *= -1;
         }
 
         if ( status->flags & E_lower )
         {
-            PUT( _PDCLIB_digits[ div.rem ] );
+            PUT( _PDCLIB_digits[ rem ] );
         }
         else
         {
-            PUT( _PDCLIB_Xdigits[ div.rem ] );
+            PUT( _PDCLIB_Xdigits[ rem ] );
         }
     }
 }

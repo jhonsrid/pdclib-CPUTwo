@@ -135,7 +135,7 @@ int _PDCLIB_bigint_digit_log2( _PDCLIB_bigint_digit_t digit );
 int _PDCLIB_bigint_log2( _PDCLIB_bigint_t const * bigint );
 unsigned _PDCLIB_bigint_div( _PDCLIB_bigint_t * dividend, _PDCLIB_bigint_t const * divisor );
 
-void _PDCLIB_print_integer( struct _PDCLIB_imaxdiv_t div, struct _PDCLIB_status_t * status );
+void _PDCLIB_print_integer( intmax_t quot, intmax_t rem, struct _PDCLIB_status_t * status );
 void _PDCLIB_print_string( const char * s, struct _PDCLIB_status_t * status );
 void _PDCLIB_print_fp( _PDCLIB_fp_t * fp, struct _PDCLIB_status_t * status );
 int _PDCLIB_print_fp_deci( _PDCLIB_fp_t * fp, struct _PDCLIB_status_t * status, char * buffer );
