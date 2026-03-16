@@ -1,5 +1,5 @@
 /* Internal PDCLib configuration <_PDCLIB_config.h>
-   CPUTwo platform: 32-bit big-endian bare-metal RISC, no OS, no threads.
+   CPUTwo platform: 32-bit little-endian bare-metal RISC, no OS, no threads.
 
    This file is part of the Public Domain C Library (PDCLib).
    Permission is granted to use, modify, and / or redistribute at will.
@@ -221,8 +221,8 @@
 
 #define _PDCLIB_TWOS_COMPLEMENT 1
 
-/* CPUTwo is big-endian: 4321. */
-#define _PDCLIB_ENDIANESS 4321
+/* CPUTwo is little-endian: 1234. */
+#define _PDCLIB_ENDIANESS 1234
 
 #define _PDCLIB_MIN_CALC( max ) ( ( - max ) - 1 )
 
@@ -478,7 +478,7 @@ struct _PDCLIB_imaxdiv_t { _PDCLIB_intmax_t quot; _PDCLIB_intmax_t rem; };
 #define _PDCLIB_LDBL_EXP( data )  ( ( data[3] & 0x7ff0u ) >> 4 )
 #define _PDCLIB_LDBL_SIZE( data ) ( data[3] &= 0x000fu, 4 )
 
-/* Big-endian: mantissa operand goes from high to low address (subtract). */
+/* Little-endian: mantissa word index runs from LSW (data[0]) to MSW. */
 #define _PDCLIB_FLT_OP -
 
 /* -------------------------------------------------------------------------- */
