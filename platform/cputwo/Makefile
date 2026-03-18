@@ -52,6 +52,7 @@ DLMALLOC_CFLAGS := -std=c99 -w \
                     -DMALLINFO_FIELD_TYPE=unsigned
 
 TARGET  := libpdclib.a
+CRT0    := crt0.o
 OBJDIR  := obj
 
 # --------------------------------------------------------------------------
@@ -97,11 +98,15 @@ ALL_OBJS    := $(GEN_OBJS) $(PLAT_OBJS) $(DLMALLOC_OBJ)
 
 .PHONY: all clean
 
-all: $(TARGET)
+all: $(CRT0) $(TARGET)
 
 $(TARGET): $(ALL_OBJS)
 	$(AR) rcs $@ $^
 	$(RANLIB) $@
+
+# C runtime startup (assembled separately, not archived into libpdclib.a)
+$(CRT0): $(THISDIR)crt0.S
+	$(CC) $(CFLAGS) -c $< -o $@
 
 # Generic sources (normal CFLAGS)
 $(OBJDIR)/gen/%.o: $(TOPDIR)functions/%.c
@@ -119,4 +124,4 @@ $(OBJDIR)/gen/_dlmalloc/malloc.o: $(TOPDIR)functions/_dlmalloc/malloc.c
 	$(CC) $(DLMALLOC_CFLAGS) -c $< -o $@
 
 clean:
-	rm -rf $(OBJDIR) $(TARGET)
+	rm -rf $(OBJDIR) $(TARGET) $(CRT0)
