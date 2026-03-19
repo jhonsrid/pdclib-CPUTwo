@@ -9,4 +9,5 @@ _start:
     ori  sp, sp, 0
     jmp  lr, main       ; call main()
     ; main returned, exit code in r0
+    jmp  lr, exit       ; flush stdio, run atexit handlers
     halt
