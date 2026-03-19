@@ -24,8 +24,8 @@ void * sbrk( intptr_t );
 /* Have all functions herein use the dl* prefix */
 #define USE_DL_PREFIX 1
 
-/* Thread safety */
-#define USE_LOCKS 1
+/* Thread safety — disabled for CPUTwo (no atomic instructions) */
+#define USE_LOCKS 0
 
 /* Hide all functions herein as internal to the library */
 #define DLMALLOC_EXPORT _PDCLIB_LOCAL

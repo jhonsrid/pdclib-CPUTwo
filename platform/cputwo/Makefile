@@ -32,12 +32,8 @@ CFLAGS  += -std=c99 -Wall -Wextra \
 
 # dlmalloc uses #include "pdclib/_PDCLIB_config.h", so it needs include/ in path.
 # Use -w to suppress any redefinition warnings from mixing pdclib + system headers.
-DLMALLOC_CFLAGS := -std=c99 -w \
-                    -I$(TOPDIR)include \
-                    -I$(THISDIR)include \
+DLMALLOC_CFLAGS := $(filter-out -O% -Wall -Wextra,$(CFLAGS)) -w \
                     -include stddef.h \
-                    -D_PDCLIB_BUILD \
-                    -D_PDCLIB_STATIC_DEFINE \
                     -DMORECORE=sbrk \
                     -DHAVE_MORECORE=1 \
                     -DHAVE_MMAP=0 \
