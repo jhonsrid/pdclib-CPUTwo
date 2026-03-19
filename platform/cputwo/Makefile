@@ -113,10 +113,14 @@ $(OBJDIR)/gen/%.o: $(TOPDIR)functions/%.c
 	@mkdir -p $(dir $@)
 	$(CC) $(CFLAGS) -c $< -o $@
 
-# compiler-rt builtins (must use -O0 to prevent recursive __udivdi3 calls)
-$(OBJDIR)/plat/_compiler_rt/%.o: $(THISDIR)functions/_compiler_rt/%.c
+# compiler-rt builtins (must use -O0 to prevent the compiler from lowering
+# 64-bit operations back into recursive calls to the very builtins we define)
+COMPILERRT_DIR := $(THISDIR)functions/_compiler_rt
+COMPILERRT_CFLAGS := $(filter-out -O% -Wall -Wextra,$(CFLAGS)) -w -O0 -I$(COMPILERRT_DIR)
+
+$(OBJDIR)/plat/_compiler_rt/%.o: $(COMPILERRT_DIR)/%.c
 	@mkdir -p $(dir $@)
-	$(CC) $(filter-out -O%,$(CFLAGS)) -O0 -c $< -o $@
+	$(CC) $(COMPILERRT_CFLAGS) -c $< -o $@
 
 # Platform sources (normal CFLAGS, overrides generic)
 $(OBJDIR)/plat/%.o: $(THISDIR)functions/%.c
