@@ -1,7 +1,9 @@
 # platform/cputwo/Makefile — build libpdclib.a for CPUTwo bare-metal
 #
 # Usage:
-#   make                       # build with clang cross-compiler
+#   make                       # build with host gcc (for initial testing)
+#   make CC=cputwo-tcc         # cross-compile with cputwo-tcc
+#   make CC=cputwo-tcc AR=ar   # same, explicit ar
 #
 # The platform directory overlays the generic sources: any .c file that
 # exists under platform/cputwo/functions/ shadows the corresponding file
@@ -11,11 +13,16 @@
 THISDIR  := $(dir $(abspath $(lastword $(MAKEFILE_LIST))))
 TOPDIR   := $(abspath $(THISDIR)../../)/
 
-LLVM_BIN := $(HOME)/llvm-project-CPUTwo/build-cputwo/bin
+CC      ?= gcc
+AR      ?= ar
+RANLIB  ?= ranlib
 
-CC      := $(LLVM_BIN)/clang -target cputwo
-AR      := $(LLVM_BIN)/llvm-ar
-RANLIB  := $(LLVM_BIN)/llvm-ranlib
+# When building with TCC, use TCC's built-in ar mode so the ELF symbol
+# table is generated correctly (macOS ar/ranlib don't understand ELF).
+ifneq ($(findstring tcc,$(CC)),)
+  AR     := $(CC) -ar
+  RANLIB := :
+endif
 
 CFLAGS  += -std=c99 -Wall -Wextra \
             -I$(TOPDIR)include \
@@ -56,8 +63,9 @@ PLAT_RELPATHS  := $(PLAT_SRCS_ABS:$(THISDIR)functions/%=%)
 GEN_SRCS_ABS   := $(shell find "$(TOPDIR)functions" -name '*.c')
 GEN_RELPATHS   := $(GEN_SRCS_ABS:$(TOPDIR)functions/%=%)
 
-# dlmalloc is built separately with special CFLAGS, so exclude it from
-# the normal source lists.
+# Exclude dlmalloc from default build: it requires sbrk (provided by platform)
+# and conflicts with host system headers during test builds.
+# Enable with: make WITH_DLMALLOC=1
 DLMALLOC_REL   := _dlmalloc/malloc.c
 GEN_RELPATHS_NODL  := $(filter-out $(DLMALLOC_REL), $(GEN_RELPATHS))
 PLAT_RELPATHS_NODL := $(filter-out $(DLMALLOC_REL), $(PLAT_RELPATHS))
@@ -72,7 +80,11 @@ FILTERED_GEN   := $(filter-out $(PLAT_RELPATHS_NODL), $(GEN_RELPATHS_NODL))
 GEN_OBJS    := $(addprefix $(OBJDIR)/gen/,   $(FILTERED_GEN:.c=.o))
 PLAT_OBJS   := $(addprefix $(OBJDIR)/plat/,  $(PLAT_RELPATHS_NODL:.c=.o))
 
+ifdef WITH_DLMALLOC
 DLMALLOC_OBJ := $(OBJDIR)/gen/$(DLMALLOC_REL:.c=.o)
+else
+DLMALLOC_OBJ :=
+endif
 
 ALL_OBJS    := $(GEN_OBJS) $(PLAT_OBJS) $(DLMALLOC_OBJ)
 
@@ -91,12 +103,6 @@ $(TARGET): $(ALL_OBJS)
 # C runtime startup (assembled separately, not archived into libpdclib.a)
 $(CRT0): $(THISDIR)crt0.S
 	$(CC) $(CFLAGS) -c $< -o $@
-
-# Workaround: _PDCLIB_print.c is miscompiled at -O2 by the CPUTwo backend
-# (printf %d format produces wrong output for stream mode)
-$(OBJDIR)/gen/_PDCLIB/_PDCLIB_print.o: $(TOPDIR)functions/_PDCLIB/_PDCLIB_print.c
-	@mkdir -p $(dir $@)
-	$(CC) $(filter-out -O%,$(CFLAGS)) -O0 -c $< -o $@
 
 # Generic sources (normal CFLAGS)
 $(OBJDIR)/gen/%.o: $(TOPDIR)functions/%.c
